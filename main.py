@@ -12,7 +12,11 @@ def p_pro(op, x, p, c, t):
             return False
         
         # Hardcoding: IVA del 15% quemado directamente en el bucle/lógica
-        iva = p * 0.15
+        if t == "Tecnología":
+            iva = p * 0.12
+        else:
+            iva = p * 0.15
+
         total_con_iva = p + iva
         
         # Lógica de descuento repetida e idéntica (Código duplicado)
