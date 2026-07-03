@@ -4,7 +4,7 @@ import json
 # Archivo de texto para persistencia de datos
 A = "inventario.json"
 
-def p_pro(op, x, p, c, t):
+def p_pro(op, codigo_barras, x, p, c, t):
     # Función gigante que hace absolutamente todo: valida, calcula, escribe y formatea
     if op == 1:
         # VALIDACIÓN Y REGISTRO DE PRODUCTO
@@ -28,6 +28,7 @@ def p_pro(op, x, p, c, t):
             p_final = total_con_iva
             
         producto = {
+            "codigo_barras": codigo_barras,
             "nombre": x,
             "precio": p,
             "stock": c,
@@ -63,13 +64,14 @@ def p_pro(op, x, p, c, t):
 
         for producto in productos:
 
+            cb = producto["codigo_barras"]
             x1 = producto["nombre"]
             p1 = producto["precio"]
             c1 = producto["stock"]
             t1 = producto["categoria"]
             pf1 = producto["precio_final"]
 
-            print(f"{x1} | ${p1} | {c1} unidades | {t1} | ${pf1}")
+            print(f"{cb} | {x1} | ${p1} | {c1} unidades | {t1} | ${pf1}")
 
             if c1 < 5:
                 print("⚠ ALERTA: Stock bajo")
@@ -103,11 +105,40 @@ def p_pro(op, x, p, c, t):
 if __name__ == "__main__":
     print("--- SISTEMA DE INVENTARIO VIEJO V1.0 ---")
     # Registrar un par de productos de prueba
-    p_pro(1, "Laptop", 800.0, 3, "Tecnología")
-    p_pro(1, "Cuaderno", 2.50, 50, "Útiles")
+    p_pro(
+    1,
+    "789456123",
+    "Laptop",
+    800.0,
+    3,
+    "Tecnología"
+    )
+
+    p_pro(
+    1,
+    "123987654",
+    "Cuaderno",
+    2.50,
+    50,
+    "Útiles"
+    )
     
     # Listar productos
-    p_pro(2, "", 0, 0, "")
+    p_pro(
+    2,
+    "",
+    "",
+    0,
+    0,
+    ""
+    )
     
     # Ver reporte de IVA
-    p_pro(3, "", 0, 0, "")
+    p_pro(
+    3,
+    "",
+    "",
+    0,
+    0,
+    ""
+    )
