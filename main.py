@@ -1,13 +1,15 @@
 import os
+import json
 from dataclasses import dataclass
 
-ARCHIVO_INVENTARIO = "datos_inv.txt"
+ARCHIVO_INVENTARIO = "inventario.json"
 IVA = 0.15
 CATEGORIA_DESCUENTO = "Tecnología"
 DESCUENTO_TECNOLOGIA = 0.10
 
 @dataclass
 class Producto:
+    codigo_barras: str
     nombre: str
     precio: float
     stock: int
@@ -20,13 +22,23 @@ def validar_producto(producto: Producto) -> bool:
         and producto.stock >= 0
     )
 
-def calcular_iva(precio: float) -> float:
+def calcular_iva(precio: float, categoria: str) -> float:
+
+    if categoria == "Tecnología":
+        return precio * 0.12
+
     return precio * IVA
 
 
 def calcular_precio_final(producto: Producto) -> float:
 
-    precio_con_iva = producto.precio + calcular_iva(producto.precio)
+    precio_con_iva = (
+        producto.precio +
+        calcular_iva(
+            producto.precio,
+            producto.categoria
+        )
+    )
 
     if producto.categoria == CATEGORIA_DESCUENTO:
         return precio_con_iva * (1 - DESCUENTO_TECNOLOGIA)
@@ -37,14 +49,28 @@ def guardar_producto(producto: Producto):
 
     precio_final = calcular_precio_final(producto)
 
-    with open(ARCHIVO_INVENTARIO, "a") as archivo:
-        archivo.write(
-            f"{producto.nombre},"
-            f"{producto.precio},"
-            f"{producto.stock},"
-            f"{producto.categoria},"
-            f"{precio_final}\n"
-        )
+    nuevo_producto = {
+        "codigo_barras": producto.codigo_barras,
+        "nombre": producto.nombre,
+        "precio": producto.precio,
+        "stock": producto.stock,
+        "categoria": producto.categoria,
+        "precio_final": precio_final
+    }
+
+    productos = []
+
+    if os.path.exists(ARCHIVO_INVENTARIO):
+        with open(ARCHIVO_INVENTARIO, "r") as archivo:
+            try:
+                productos = json.load(archivo)
+            except:
+                productos = []
+
+    productos.append(nuevo_producto)
+
+    with open(ARCHIVO_INVENTARIO, "w") as archivo:
+        json.dump(productos, archivo, indent=4)
 
 def registrar_producto(producto: Producto):
 
@@ -60,21 +86,12 @@ def leer_productos():
     if not os.path.exists(ARCHIVO_INVENTARIO):
         return []
 
-    productos = []
+    with open(ARCHIVO_INVENTARIO, "r") as archivo:
 
-    with open(ARCHIVO_INVENTARIO) as archivo:
-
-        for linea in archivo:
-
-            nombre, precio, stock, categoria, precio_final = linea.strip().split(",")
-
-            productos.append({
-                "nombre": nombre,
-                "precio": float(precio),
-                "stock": int(stock),
-                "categoria": categoria,
-                "precio_final": float(precio_final)
-            })
+        try:
+            productos = json.load(archivo)
+        except:
+            productos = []
 
     return productos
 
@@ -90,20 +107,29 @@ def listar_productos():
 
     for producto in productos:
         print(
+            f"{producto['codigo_barras']} | "
             f"{producto['nombre']} | "
             f"${producto['precio']} | "
             f"{producto['stock']} | "
             f"{producto['categoria']} | "
             f"${producto['precio_final']:.2f}"
         )
+        if producto["stock"] < 5:
+            print("⚠ ALERTA: Stock bajo")
 
 def reporte_iva():
 
     productos = leer_productos()
 
     total_iva = sum(
-        calcular_iva(producto["precio"])
+
+        calcular_iva(
+            producto["precio"],
+            producto["categoria"]
+        )
+
         for producto in productos
+
     )
 
     print(f"IVA acumulado: ${total_iva:.2f}")
@@ -112,11 +138,23 @@ def reporte_iva():
 def main():
 
     registrar_producto(
-        Producto("Laptop", 800, 5, "Tecnología")
+        Producto(
+            "789456123",
+            "Laptop",
+            800,
+            3,
+            "Tecnología"
+        )
     )
 
     registrar_producto(
-        Producto("Cuaderno", 2.5, 50, "Útiles")
+        Producto(
+            "123987654",
+            "Cuaderno",
+            2.5,
+            50,
+            "Útiles"
+        )
     )
 
     listar_productos()
