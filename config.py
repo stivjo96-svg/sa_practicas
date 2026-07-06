@@ -1,0 +1,7 @@
+ARCHIVO_INVENTARIO = "inventario.json"
+
+IVA = 0.15
+
+CATEGORIA_DESCUENTO = "Tecnología"
+
+DESCUENTO_TECNOLOGIA = 0.10
